@@ -18,7 +18,7 @@ public class Puzzler {
         this.numberOfNodes = 0;
         this.puzzleStart = puzzleStart;
         this.puzzleFinal = puzzleFinal;
-        this.root = new PuzzleNode(puzzleStart, getErrCount(puzzleStart, puzzleFinal), "Root");
+        this.root = new PuzzleNode(puzzleStart, getErrCount(puzzleStart, puzzleFinal), "Root", 0);
         this.alreadyGenerated = new ArrayList<>();
         this.alreadyTried = new ArrayList<>();
     }
@@ -33,6 +33,15 @@ public class Puzzler {
             }
         }
         return nokPositions;
+    }
+
+    ArrayList<String> getPath(PuzzleNode node){
+        ArrayList<String> path = new ArrayList<>();
+        while (node.parent != null) {
+            path.add(node.operationUsed);
+            node = node.parent;
+        }
+        return path;
     }
 
     int isUnique(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<PuzzleNode> uniqueList){
@@ -66,18 +75,31 @@ public class Puzzler {
         PuzzleNode currentNode = root;
         alreadyGenerated.add(root);
         alreadyTried.add(root);
-
+        int depth = 1;
         int tryAgainIndex = 0;
         while (numberOfNodes != UNSOLVABLE_LIMIT){
+            if(depth == 460)
+                System.out.println();
+            if(currentNode.greedCount == 0) {
+                System.out.println("Puzzle solved!");
+                ArrayList<String> operations = getPath(currentNode);
+                System.out.println(operations);
+                System.out.println(operations.size());
+                return;
+            }
+
             int bigestGreed = Integer.MAX_VALUE;
             PuzzleNode nextNode = null;
             //variation 1 UP
             ArrayList<ArrayList<Integer>> alteredPuzzle = oneUp(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null){
 
-                PuzzleNode variation1 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "UP");
+                PuzzleNode variation1 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "UP", depth);
                 if(isUnique(variation1.puzzleStatus, alreadyTried) == -1) {
                     currentNode.child1 = variation1;
+                    currentNode.child1.parent = currentNode;
+                    alreadyGenerated.add(currentNode.child1);
+                    numberOfNodes++;
                     if(currentNode.child1.greedCount < bigestGreed){
                         int indexOfGenerated = isUnique(variation1.puzzleStatus, alreadyGenerated);
                         if(indexOfGenerated > -1){
@@ -87,8 +109,6 @@ public class Puzzler {
                         else{
                             bigestGreed = currentNode.child1.greedCount;
                             nextNode = currentNode.child1;
-                            alreadyGenerated.add(currentNode.child1);
-                            numberOfNodes++;
                         }
                     }
                 }
@@ -96,9 +116,12 @@ public class Puzzler {
             //variation 2 DOWN
             alteredPuzzle = oneDown(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null){
-                PuzzleNode variation2 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "DOWN");
+                PuzzleNode variation2 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "DOWN", depth);
                 if(isUnique(variation2.puzzleStatus, alreadyTried) == -1) {
                     currentNode.child2 = variation2;
+                    currentNode.child2.parent = currentNode;
+                    alreadyGenerated.add(currentNode.child2);
+                    numberOfNodes++;
                     if(currentNode.child2.greedCount < bigestGreed){
                         int indexOfGenerated = isUnique(variation2.puzzleStatus, alreadyGenerated);
                         if(indexOfGenerated > -1){
@@ -108,8 +131,6 @@ public class Puzzler {
                         else{
                             bigestGreed = currentNode.child2.greedCount;
                             nextNode = currentNode.child2;
-                            alreadyGenerated.add(currentNode.child2);
-                            numberOfNodes++;
                         }
                     }
                 }
@@ -117,9 +138,12 @@ public class Puzzler {
             //variation 3 RIGHT
             alteredPuzzle = oneRight(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null) {
-                PuzzleNode variation3 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "RIGHT");
+                PuzzleNode variation3 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "RIGHT", depth);
                 if (isUnique(variation3.puzzleStatus, alreadyTried) == -1) {
                     currentNode.child3 = variation3;
+                    currentNode.child3.parent = currentNode;
+                    alreadyGenerated.add(currentNode.child3);
+                    numberOfNodes++;
                     if (currentNode.child3.greedCount < bigestGreed) {
                         int indexOfGenerated = isUnique(variation3.puzzleStatus, alreadyGenerated);
                         if (indexOfGenerated > -1) {
@@ -128,8 +152,6 @@ public class Puzzler {
                         } else {
                             bigestGreed = currentNode.child3.greedCount;
                             nextNode = currentNode.child3;
-                            alreadyGenerated.add(currentNode.child3);
-                            numberOfNodes++;
                         }
                     }
                 }
@@ -137,9 +159,12 @@ public class Puzzler {
             //variation 4 LEFT
             alteredPuzzle = oneLeft(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null){
-                PuzzleNode variation4 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "LEFT");
+                PuzzleNode variation4 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "LEFT", depth);
                 if(isUnique(variation4.puzzleStatus, alreadyTried) == -1) {
                     currentNode.child4 = variation4;
+                    currentNode.child4.parent = currentNode;
+                    alreadyGenerated.add(currentNode.child4);
+                    numberOfNodes++;
                     if (currentNode.child4.greedCount < bigestGreed) {
                         int indexOfGenerated = isUnique(variation4.puzzleStatus, alreadyGenerated);
                         if (indexOfGenerated > -1) {
@@ -148,27 +173,27 @@ public class Puzzler {
                         } else {
                             bigestGreed = currentNode.child4.greedCount;
                             nextNode = currentNode.child4;
-                            alreadyGenerated.add(currentNode.child4);
-                            numberOfNodes++;
                         }
                     }
                 }
             }
 
             try{
-                if(currentNode.greedCount == 0) {
-                    System.out.println("Puzzle solved!");
-                    return;
-                }
                 if(nextNode == null){
+                    //System.out.println(depth);
                     currentNode = alreadyGenerated.get(tryAgainIndex);
+                    depth = currentNode.depth;
+                    alreadyGenerated.remove(currentNode);
                     tryAgainIndex++;
                     continue;
                 }
-
+                tryAgainIndex = 0;
+                depth++;
                 //printPuzzleStatus(nextNode.puzzleStatus);
 
                 alreadyTried.add(currentNode);
+                alreadyGenerated.remove(currentNode);
+
                 currentNode = nextNode;
             }
             catch (Exception e){
@@ -253,16 +278,18 @@ public class Puzzler {
 class PuzzleNode {
     int greedCount;
     String operationUsed;
-    boolean roadTraveled;
+    int depth;
     PuzzleNode child1;
     PuzzleNode child2;
     PuzzleNode child3;
     PuzzleNode child4;
+    PuzzleNode parent;
     protected ArrayList<ArrayList<Integer>> puzzleStatus;
 
-    protected PuzzleNode(ArrayList<ArrayList<Integer>> puzzleStatus, int greedCount, String operationUsed) {
+    protected PuzzleNode(ArrayList<ArrayList<Integer>> puzzleStatus, int greedCount, String operationUsed, int depth) {
         this.greedCount = greedCount;
         this.puzzleStatus = puzzleStatus;
         this.operationUsed = operationUsed;
+        this.depth = depth;
     }
 }
