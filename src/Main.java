@@ -3,6 +3,10 @@ import java.util.Collections;
 
 public class Main {
     public static void main(String[] args) {
+
+        Tester test = new Tester();
+        test.createPuzzle(3, 3);
+
         int levels = 3;
         ArrayList<ArrayList<Integer>> graph = new ArrayList<>(levels);
         ArrayList<ArrayList<Integer>> finalGraph = new ArrayList<>(levels);
@@ -48,7 +52,5 @@ public class Main {
 
         Puzzler puzzle = new Puzzler(graph, finalGraph);
         puzzle.puzzleSolver();
-
-
     }
 }
