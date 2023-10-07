@@ -1,6 +1,7 @@
 import org.w3c.dom.Node;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Puzzler {
@@ -83,6 +84,7 @@ public class Puzzler {
             if(currentNode.greedCount == 0) {
                 System.out.println("Puzzle solved!");
                 ArrayList<String> operations = getPath(currentNode);
+                Collections.reverse(operations);
                 System.out.println(operations);
                 System.out.println(operations.size());
                 return;
