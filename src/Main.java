@@ -1,44 +1,54 @@
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Main {
     public static void main(String[] args) {
         int levels = 3;
         ArrayList<ArrayList<Integer>> graph = new ArrayList<>(levels);
+        ArrayList<ArrayList<Integer>> finalGraph = new ArrayList<>(levels);
 
         for(int i=0; i < levels; i++) {
             graph.add(new ArrayList());
+            finalGraph.add(new ArrayList());
         }
-        int element = 0;
-        for(int i = 0; i < 3; i++){
-            for(int j = 0; j < 3; j++){
-                element++;
-                graph.get(i).add(element);
-            }
-        }
-        (graph.get(2)).set(2,0);
 
-        //force change 0 to row 1 last position
-        graph.get(0).set(graph.size()-1, 0);
-        graph.get(2).set(graph.size()-1, 8);
+        //start graph
+        graph.get(0).add(2);
+        graph.get(0).add(8);
+        graph.get(0).add(3);
 
+        graph.get(1).add(1);
+        graph.get(1).add(6);
+        graph.get(1).add(4);
 
-        System.out.println("Before oneUp: ");
+        graph.get(2).add(7);
+        graph.get(2).add(0);
+        graph.get(2).add(5);
+
+        //final graph
+        finalGraph.get(0).add(1);
+        finalGraph.get(0).add(2);
+        finalGraph.get(0).add(3);
+
+        finalGraph.get(1).add(8);
+        finalGraph.get(1).add(0);
+        finalGraph.get(1).add(4);
+
+        finalGraph.get(2).add(7);
+        finalGraph.get(2).add(6);
+        finalGraph.get(2).add(5);
+
+        //print status
         for(int i = 0; i < graph.size(); i++){
             for(int j = 0; j < graph.get(i).size(); j++)
                 System.out.print(graph.get(i).get(j) + " ");
             System.out.println();
         }
+        System.out.println();
 
-        Puzzler puzzle = new Puzzler();
-        puzzle.oneUp(graph);
+        Puzzler puzzle = new Puzzler(graph, finalGraph);
+        puzzle.puzzleSolver();
 
-        System.out.println("After oneUp at lvl not 0: ");
-        for(int i = 0; i < graph.size(); i++){
-            for(int j = 0; j < graph.get(i).size(); j++)
-                System.out.print(graph.get(i).get(j) + " ");
-            System.out.println();
-        }
 
-        System.out.println(graph.indexOf(0));
     }
 }
