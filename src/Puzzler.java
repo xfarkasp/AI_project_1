@@ -257,20 +257,14 @@ public class Puzzler {
         System.out.println("Unsolvable, number of nodes is larger than 10M");
     }
 
-    // Comparator for sorting the list by roll no
+    // Comparator for sorting the list by best path
     public static Comparator<PuzzleNode> greedValue = new Comparator<PuzzleNode>() {
-
-        // Method
         public int compare(PuzzleNode node1, PuzzleNode node2) {
 
             int greed1 = node1.greedCount + node1.depth;
             int greed2 = node2.greedCount + node2.depth;
-
-            // For ascending order
+            //return descending order
             return greed1 - greed2;
-
-            // For descending order
-            // rollno2-rollno1;
         }
     };
 
