@@ -1,11 +1,11 @@
 import java.util.ArrayList;
 import java.util.Collections;
 
+import static java.lang.Math.abs;
+
 public class Main {
     public static void main(String[] args) {
 
-        Tester test = new Tester();
-        test.createPuzzle(3, 3);
 
         int levels = 3;
         ArrayList<ArrayList<Integer>> graph = new ArrayList<>(levels);
@@ -50,7 +50,7 @@ public class Main {
         }
         System.out.println();
 
-        Puzzler puzzle = new Puzzler(graph, finalGraph);
+        Puzzler puzzle = new Puzzler(graph, finalGraph, Puzzler.heuristics.H2);
         puzzle.puzzleSolver();
     }
 }

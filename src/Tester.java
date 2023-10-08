@@ -24,11 +24,11 @@ public class Tester {
     }
 
     public static void test(int rows, int cols){
-        Puzzler puzzle = new Puzzler(createPuzzle(rows, cols), createPuzzle(rows, cols));
+        Puzzler puzzle = new Puzzler(createPuzzle(rows, cols), createPuzzle(rows, cols), Puzzler.heuristics.H2);
         puzzle.puzzleSolver();
     }
 
     public static void main(String[] args){
-        test(3, 3);
+        test(4, 4);
     }
 }

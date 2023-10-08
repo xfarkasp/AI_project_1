@@ -4,8 +4,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Puzzler {
+import static java.lang.Math.abs;
 
+public class Puzzler {
+    public enum heuristics {
+        H1,
+        H2
+    }
     private PuzzleNode root;
     final int UNSOLVABLE_LIMIT = 1000000;
     private int numberOfNodes;
@@ -13,18 +18,30 @@ public class Puzzler {
     private ArrayList<ArrayList<Integer>> puzzleFinal;
     private ArrayList<PuzzleNode> alreadyGenerated;
     private ArrayList<PuzzleNode> alreadyTried;
+    private heuristics usedH;
 
 
-    public Puzzler(ArrayList<ArrayList<Integer>> puzzleStart, ArrayList<ArrayList<Integer>> puzzleFinal) {
+    public Puzzler(ArrayList<ArrayList<Integer>> puzzleStart, ArrayList<ArrayList<Integer>> puzzleFinal, heuristics h) {
         this.numberOfNodes = 0;
         this.puzzleStart = puzzleStart;
         this.puzzleFinal = puzzleFinal;
-        this.root = new PuzzleNode(puzzleStart, getErrCount(puzzleStart, puzzleFinal), "Root", 0);
+        this.usedH = h;
+        this.root = new PuzzleNode(puzzleStart, h(puzzleStart, puzzleFinal,usedH), "Root", 0);
         this.alreadyGenerated = new ArrayList<>();
         this.alreadyTried = new ArrayList<>();
     }
 
-    public int getErrCount(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal){
+    int h(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal, heuristics h){
+        switch (h){
+            case H1:
+                return h1(puzzleStatus, puzzleFinal);
+            case H2:
+                return h2(puzzleStatus, puzzleFinal);
+        }
+       return -1;
+    }
+
+    public int h1(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal){
         int nokPositions = 0;
         //compare the value on the same position from the current status to the same position at final status of the puzzle
         for(int i = 0; i < puzzleStatus.size() && i < puzzleFinal.size(); i++){
@@ -34,6 +51,26 @@ public class Puzzler {
             }
         }
         return nokPositions;
+    }
+
+    public int h2(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal){
+        int distanceSum = 0;
+        for(int i = 0; i < puzzleStatus.size(); i++){
+            for(int j = 0; j < puzzleStatus.get(i).size(); j++) {
+                int element = puzzleStatus.get(i).get(j);
+                if (element != 0){
+                    for (int level = 0; level < puzzleFinal.size(); level++) {
+                        if (puzzleFinal.get(level).contains(element)) {
+                            int indexOfScnd = puzzleFinal.get(level).indexOf(element);
+                            int distance = (abs(i - level) + abs(j - indexOfScnd));
+                            distanceSum += distance;
+                        }
+                    }
+                }
+            }
+        }
+
+        return distanceSum;
     }
 
     ArrayList<String> getPath(PuzzleNode node){
@@ -79,8 +116,6 @@ public class Puzzler {
         int depth = 1;
         int tryAgainIndex = 0;
         while (numberOfNodes != UNSOLVABLE_LIMIT){
-            if(depth == 460)
-                System.out.println();
             if(currentNode.greedCount == 0) {
                 System.out.println("Puzzle solved!");
                 ArrayList<String> operations = getPath(currentNode);
@@ -96,7 +131,7 @@ public class Puzzler {
             ArrayList<ArrayList<Integer>> alteredPuzzle = oneUp(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null){
 
-                PuzzleNode variation1 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "UP", depth);
+                PuzzleNode variation1 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "UP", depth);
                 if(isUnique(variation1.puzzleStatus, alreadyTried) == -1) {
                     currentNode.child1 = variation1;
                     currentNode.child1.parent = currentNode;
@@ -118,7 +153,7 @@ public class Puzzler {
             //variation 2 DOWN
             alteredPuzzle = oneDown(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null){
-                PuzzleNode variation2 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "DOWN", depth);
+                PuzzleNode variation2 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "DOWN", depth);
                 if(isUnique(variation2.puzzleStatus, alreadyTried) == -1) {
                     currentNode.child2 = variation2;
                     currentNode.child2.parent = currentNode;
@@ -140,7 +175,7 @@ public class Puzzler {
             //variation 3 RIGHT
             alteredPuzzle = oneRight(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null) {
-                PuzzleNode variation3 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "RIGHT", depth);
+                PuzzleNode variation3 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "RIGHT", depth);
                 if (isUnique(variation3.puzzleStatus, alreadyTried) == -1) {
                     currentNode.child3 = variation3;
                     currentNode.child3.parent = currentNode;
@@ -161,7 +196,7 @@ public class Puzzler {
             //variation 4 LEFT
             alteredPuzzle = oneLeft(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null){
-                PuzzleNode variation4 = new PuzzleNode(alteredPuzzle, getErrCount(alteredPuzzle, this.puzzleFinal), "LEFT", depth);
+                PuzzleNode variation4 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "LEFT", depth);
                 if(isUnique(variation4.puzzleStatus, alreadyTried) == -1) {
                     currentNode.child4 = variation4;
                     currentNode.child4.parent = currentNode;
