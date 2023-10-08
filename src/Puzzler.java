@@ -1,8 +1,6 @@
 import org.w3c.dom.Node;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static java.lang.Math.abs;
 
@@ -111,11 +109,20 @@ public class Puzzler {
 
     void puzzleSolver(){
         PuzzleNode currentNode = root;
+        //live que
+        PriorityQueue<PuzzleNode> liveQue = new PriorityQueue<>(new comp());
+        liveQue.add(root);
         alreadyGenerated.add(root);
-        alreadyTried.add(root);
+
         int depth = 1;
         int tryAgainIndex = 0;
+
+
+
         while (numberOfNodes != UNSOLVABLE_LIMIT){
+            currentNode = liveQue.peek();
+            liveQue.poll();
+
             if(currentNode.greedCount == 0) {
                 System.out.println("Puzzle solved!");
                 ArrayList<String> operations = getPath(currentNode);
@@ -125,117 +132,51 @@ public class Puzzler {
                 return;
             }
 
-            int bigestGreed = Integer.MAX_VALUE;
-            PuzzleNode nextNode = null;
             //variation 1 UP
             ArrayList<ArrayList<Integer>> alteredPuzzle = oneUp(listCloner(currentNode.puzzleStatus));
+
             if(alteredPuzzle != null){
 
                 PuzzleNode variation1 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "UP", depth);
-                if(isUnique(variation1.puzzleStatus, alreadyTried) == -1) {
-                    currentNode.child1 = variation1;
-                    currentNode.child1.parent = currentNode;
-                    alreadyGenerated.add(currentNode.child1);
-                    numberOfNodes++;
-                    if(currentNode.child1.greedCount < bigestGreed){
-                        int indexOfGenerated = isUnique(variation1.puzzleStatus, alreadyGenerated);
-                        if(indexOfGenerated > -1){
-                            nextNode = alreadyGenerated.get(indexOfGenerated);
-                            bigestGreed = nextNode.greedCount;
-                        }
-                        else{
-                            bigestGreed = currentNode.child1.greedCount;
-                            nextNode = currentNode.child1;
-                        }
-                    }
-                }
+
+                currentNode.child1 = variation1;
+                currentNode.child1.parent = currentNode;
+                liveQue.add(currentNode.child1);
+                numberOfNodes++;
+
             }
             //variation 2 DOWN
             alteredPuzzle = oneDown(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null){
                 PuzzleNode variation2 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "DOWN", depth);
-                if(isUnique(variation2.puzzleStatus, alreadyTried) == -1) {
-                    currentNode.child2 = variation2;
-                    currentNode.child2.parent = currentNode;
-                    alreadyGenerated.add(currentNode.child2);
-                    numberOfNodes++;
-                    if(currentNode.child2.greedCount < bigestGreed){
-                        int indexOfGenerated = isUnique(variation2.puzzleStatus, alreadyGenerated);
-                        if(indexOfGenerated > -1){
-                            nextNode = alreadyGenerated.get(indexOfGenerated);
-                            bigestGreed = nextNode.greedCount;
-                        }
-                        else{
-                            bigestGreed = currentNode.child2.greedCount;
-                            nextNode = currentNode.child2;
-                        }
-                    }
-                }
+
+                currentNode.child2 = variation2;
+                currentNode.child2.parent = currentNode;
+                liveQue.add(currentNode.child2);
+                numberOfNodes++;
+
             }
             //variation 3 RIGHT
             alteredPuzzle = oneRight(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null) {
                 PuzzleNode variation3 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "RIGHT", depth);
-                if (isUnique(variation3.puzzleStatus, alreadyTried) == -1) {
-                    currentNode.child3 = variation3;
-                    currentNode.child3.parent = currentNode;
-                    alreadyGenerated.add(currentNode.child3);
-                    numberOfNodes++;
-                    if (currentNode.child3.greedCount < bigestGreed) {
-                        int indexOfGenerated = isUnique(variation3.puzzleStatus, alreadyGenerated);
-                        if (indexOfGenerated > -1) {
-                            nextNode = alreadyGenerated.get(indexOfGenerated);
-                            bigestGreed = nextNode.greedCount;
-                        } else {
-                            bigestGreed = currentNode.child3.greedCount;
-                            nextNode = currentNode.child3;
-                        }
-                    }
-                }
+
+                currentNode.child3 = variation3;
+                currentNode.child3.parent = currentNode;
+                liveQue.add(currentNode.child3);
+                numberOfNodes++;
+
             }
             //variation 4 LEFT
             alteredPuzzle = oneLeft(listCloner(currentNode.puzzleStatus));
             if(alteredPuzzle != null){
                 PuzzleNode variation4 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "LEFT", depth);
-                if(isUnique(variation4.puzzleStatus, alreadyTried) == -1) {
-                    currentNode.child4 = variation4;
-                    currentNode.child4.parent = currentNode;
-                    alreadyGenerated.add(currentNode.child4);
-                    numberOfNodes++;
-                    if (currentNode.child4.greedCount < bigestGreed) {
-                        int indexOfGenerated = isUnique(variation4.puzzleStatus, alreadyGenerated);
-                        if (indexOfGenerated > -1) {
-                            nextNode = alreadyGenerated.get(indexOfGenerated);
-                            bigestGreed = nextNode.greedCount;
-                        } else {
-                            bigestGreed = currentNode.child4.greedCount;
-                            nextNode = currentNode.child4;
-                        }
-                    }
-                }
-            }
 
-            try{
-                if(nextNode == null){
-                    //System.out.println(depth);
-                    currentNode = alreadyGenerated.get(tryAgainIndex);
-                    depth = currentNode.depth;
-                    alreadyGenerated.remove(currentNode);
-                    tryAgainIndex++;
-                    continue;
-                }
-                tryAgainIndex = 0;
-                depth++;
-                //printPuzzleStatus(nextNode.puzzleStatus);
+                currentNode.child4 = variation4;
+                currentNode.child4.parent = currentNode;
+                liveQue.add(currentNode.child4);
+                numberOfNodes++;
 
-                alreadyTried.add(currentNode);
-                alreadyGenerated.remove(currentNode);
-
-                currentNode = nextNode;
-            }
-            catch (Exception e){
-                System.out.println(e);
-                return;
             }
 
         }
@@ -310,6 +251,14 @@ public class Puzzler {
         }
         return puzzleStatus;
     }
+
+    // Comparison object to be used to order the heap
+    public static class comp implements Comparator<PuzzleNode> {
+        @Override
+        public int compare(PuzzleNode lhs, PuzzleNode rhs){
+            return (lhs.greedCount + lhs.depth) > (rhs.greedCount+rhs.depth)?1:-1;
+        }
+    }
 }
 
 class PuzzleNode {
@@ -329,4 +278,6 @@ class PuzzleNode {
         this.operationUsed = operationUsed;
         this.depth = depth;
     }
+
+
 }

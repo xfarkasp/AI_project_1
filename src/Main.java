@@ -17,30 +17,30 @@ public class Main {
         }
 
         //start graph
+        graph.get(0).add(1);
         graph.get(0).add(2);
-        graph.get(0).add(8);
         graph.get(0).add(3);
 
-        graph.get(1).add(1);
+        graph.get(1).add(5);
         graph.get(1).add(6);
-        graph.get(1).add(4);
+        graph.get(1).add(0);
 
         graph.get(2).add(7);
-        graph.get(2).add(0);
-        graph.get(2).add(5);
+        graph.get(2).add(8);
+        graph.get(2).add(4);
 
         //final graph
         finalGraph.get(0).add(1);
         finalGraph.get(0).add(2);
         finalGraph.get(0).add(3);
 
+        finalGraph.get(1).add(5);
         finalGraph.get(1).add(8);
-        finalGraph.get(1).add(0);
-        finalGraph.get(1).add(4);
+        finalGraph.get(1).add(6);
 
+        finalGraph.get(2).add(0);
         finalGraph.get(2).add(7);
-        finalGraph.get(2).add(6);
-        finalGraph.get(2).add(5);
+        finalGraph.get(2).add(4);
 
         //print status
         for(int i = 0; i < graph.size(); i++){
@@ -50,7 +50,7 @@ public class Main {
         }
         System.out.println();
 
-        Puzzler puzzle = new Puzzler(graph, finalGraph, Puzzler.heuristics.H2);
+        Puzzler puzzle = new Puzzler(graph, finalGraph, Puzzler.heuristics.H1);
         puzzle.puzzleSolver();
     }
 }
