@@ -1,13 +1,21 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Scanner;
 
 import static java.lang.Math.abs;
 
 public class Main {
     public static void main(String[] args) {
 
+        Scanner input = new Scanner(System.in);
+        System.out.println("Enter row count: ");
+        int levels = input.nextInt();
+        input.nextLine();
 
-        int levels = 3;
+        System.out.println("Enter col count: ");
+        int cols = input.nextInt();
+        input.nextLine();
+
         ArrayList<ArrayList<Integer>> graph = new ArrayList<>(levels);
         ArrayList<ArrayList<Integer>> finalGraph = new ArrayList<>(levels);
 
@@ -15,32 +23,20 @@ public class Main {
             graph.add(new ArrayList());
             finalGraph.add(new ArrayList());
         }
+        System.out.println("Start pos: ");
+        String startPos = input.nextLine();
+        System.out.println("End pos: ");
+        String endPos = input.nextLine();
 
-        //start graph
-        graph.get(0).add(2);
-        graph.get(0).add(8);
-        graph.get(0).add(3);
+        input = new Scanner(startPos);
+        Scanner inputFinal = new Scanner(endPos);
 
-        graph.get(1).add(1);
-        graph.get(1).add(6);
-        graph.get(1).add(4);
-
-        graph.get(2).add(7);
-        graph.get(2).add(0);
-        graph.get(2).add(5);
-
-        //final graph
-        finalGraph.get(0).add(1);
-        finalGraph.get(0).add(2);
-        finalGraph.get(0).add(3);
-
-        finalGraph.get(1).add(8);
-        finalGraph.get(1).add(0);
-        finalGraph.get(1).add(4);
-
-        finalGraph.get(2).add(7);
-        finalGraph.get(2).add(6);
-        finalGraph.get(2).add(5);
+        for(int i = 0; i < levels; i++){
+            for (int j = 0; j < cols; j++){
+                graph.get(i).add(input.nextInt());
+                finalGraph.get(i).add(inputFinal.nextInt());
+            }
+        }
 
         //print status
         for(int i = 0; i < graph.size(); i++){
@@ -50,7 +46,13 @@ public class Main {
         }
         System.out.println();
 
-        Puzzler puzzle = new Puzzler(graph, finalGraph, Puzzler.heuristics.H2);
-        puzzle.puzzleSolver();
+        Puzzler h3 = new Puzzler(graph, finalGraph, Puzzler.heuristics.H3);
+        Puzzler h2 = new Puzzler(graph, finalGraph, Puzzler.heuristics.H2);
+        Puzzler h1 = new Puzzler(graph, finalGraph, Puzzler.heuristics.H1);
+
+        h2.puzzleSolver();
+        h3.puzzleSolver();
+
+        h1.puzzleSolver();
     }
 }

@@ -2,6 +2,7 @@ import org.w3c.dom.Node;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static java.lang.Math.abs;
@@ -9,7 +10,8 @@ import static java.lang.Math.abs;
 public class Puzzler {
     public enum heuristics {
         H1,
-        H2
+        H2,
+        H3
     }
     private PuzzleNode root;
     final int UNSOLVABLE_LIMIT = 1000000;
@@ -37,6 +39,8 @@ public class Puzzler {
                 return h1(puzzleStatus, puzzleFinal);
             case H2:
                 return h2(puzzleStatus, puzzleFinal);
+            case H3:
+                return h3(puzzleStatus, puzzleFinal);
         }
        return -1;
     }
@@ -71,6 +75,10 @@ public class Puzzler {
         }
 
         return distanceSum;
+    }
+
+    public int h3(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal){
+        return h2(puzzleStatus, puzzleFinal) + h1(puzzleStatus, puzzleFinal);
     }
 
     ArrayList<String> getPath(PuzzleNode node){
@@ -110,6 +118,7 @@ public class Puzzler {
     }
 
     void puzzleSolver(){
+        long start = System.nanoTime();
         PuzzleNode currentNode = root;
         alreadyGenerated.add(root);
         alreadyTried.add(root);
@@ -122,6 +131,13 @@ public class Puzzler {
                 Collections.reverse(operations);
                 System.out.println(operations);
                 System.out.println(operations.size());
+                long end = System.nanoTime();
+                double timeSeconds = (end - start) * Math.pow(10, -9);
+                System.out.println("Heuristic used: " + usedH);
+                System.out.println("Execution time: " +timeSeconds + " seconds");
+                System.out.println("Number of tested nodes: " + alreadyTried.size());
+                System.out.println("Number of generated nodes: " + numberOfNodes);
+                System.out.println("Solution depth: " + depth);
                 return;
             }
 
@@ -218,13 +234,12 @@ public class Puzzler {
             try{
                 if(nextNode == null){
                     //System.out.println(depth);
-                    currentNode = alreadyGenerated.get(tryAgainIndex);
+                    Collections.sort(alreadyGenerated, greedValue);
+                    currentNode = alreadyGenerated.get(0);
                     depth = currentNode.depth;
                     alreadyGenerated.remove(currentNode);
-                    tryAgainIndex++;
                     continue;
                 }
-                tryAgainIndex = 0;
                 depth++;
                 //printPuzzleStatus(nextNode.puzzleStatus);
 
@@ -241,6 +256,24 @@ public class Puzzler {
         }
         System.out.println("Unsolvable, number of nodes is larger than 10M");
     }
+
+    // Comparator for sorting the list by roll no
+    public static Comparator<PuzzleNode> greedValue = new Comparator<PuzzleNode>() {
+
+        // Method
+        public int compare(PuzzleNode node1, PuzzleNode node2) {
+
+            int greed1 = node1.greedCount + node1.depth;
+            int greed2 = node2.greedCount + node2.depth;
+
+            // For ascending order
+            return greed1 - greed2;
+
+            // For descending order
+            // rollno2-rollno1;
+        }
+    };
+
     //index 0 = row, index 1 = col
     ArrayList<Integer> emptyPosition(ArrayList<ArrayList<Integer>> puzzleStatus){
         //find index of empty
