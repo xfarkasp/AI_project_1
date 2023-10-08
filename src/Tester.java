@@ -23,12 +23,21 @@ public class Tester {
         return puzzle;
     }
 
+
+
     public static void test(int rows, int cols){
-        Puzzler puzzle = new Puzzler(createPuzzle(rows, cols), createPuzzle(rows, cols), Puzzler.heuristics.H2);
-        puzzle.puzzleSolver();
+        ArrayList<ArrayList<Integer>> start = createPuzzle(rows, cols);
+        ArrayList<ArrayList<Integer>> goal = createPuzzle(rows, cols);
+
+        Puzzler puzzleH1 = new Puzzler(start , goal, Puzzler.heuristics.H1);
+        puzzleH1.puzzleSolver();
+
+        Puzzler puzzleH2 = new Puzzler(start , goal, Puzzler.heuristics.H2);
+        puzzleH2.puzzleSolver();
     }
 
     public static void main(String[] args){
-        test(4, 4);
+        for(int i = 0; i < 1000; i++)
+            test(3, 3);
     }
 }
