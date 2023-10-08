@@ -4,8 +4,46 @@ import java.util.Collections;
 import static java.lang.Math.abs;
 
 public class Main {
+    static int getInvCount(int[] arr)
+    {
+        int inv_count = 0;
+        for (int i = 0; i < 9; i++)
+            for (int j = i + 1; j < 9; j++)
+
+                // Value 0 is used for empty space
+                if (arr[i] > 0 &&
+                        arr[j] > 0 && arr[i] > arr[j])
+                    inv_count++;
+        return inv_count;
+    }
+
+    // This function returns true
+// if given 8 puzzle is solvable.
+    static boolean isSolvable(int[][] puzzle)
+    {
+        int linearPuzzle[];
+        linearPuzzle = new int[9];
+        int k = 0;
+
+        // Converting 2-D puzzle to linear form
+        for(int i=0; i<3; i++)
+            for(int j=0; j<3; j++)
+                linearPuzzle[k++] = puzzle[i][j];
+
+        // Count inversions in given 8 puzzle
+        int invCount = getInvCount(linearPuzzle);
+
+        // return true if inversion count is even.
+        return (invCount % 2 == 0);
+    }
     public static void main(String[] args) {
 
+        int[][] puzzle1 = {{1, 0, 2},{3, 4, 5},{8, 7, 6}};
+        // in linear
+        if(isSolvable(puzzle1))
+            System.out.println("Solvable");
+        else
+            System.out.println("Not Solvable");
 
         int levels = 3;
         ArrayList<ArrayList<Integer>> graph = new ArrayList<>(levels);
@@ -50,7 +88,8 @@ public class Main {
         }
         System.out.println();
 
-        Puzzler puzzle = new Puzzler(graph, finalGraph, Puzzler.heuristics.H1);
+       Puzzler puzzle = new Puzzler(graph, finalGraph, Puzzler.heuristics.H1);
+        puzzle.solvable(graph);
         puzzle.puzzleSolver();
     }
 }

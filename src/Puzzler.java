@@ -28,6 +28,25 @@ public class Puzzler {
         this.alreadyGenerated = new ArrayList<>();
         this.alreadyTried = new ArrayList<>();
     }
+    
+    boolean solvable(ArrayList<ArrayList<Integer>> puzzle){
+        int invCount = 0;
+        ArrayList<Integer> d1 = new ArrayList<>();
+        for(int i=0; i<puzzle.size(); i++) {
+            for (int j = 0; j < puzzle.get(0).size(); j++) {
+                d1.add(puzzle.get(i).get(j));
+            }
+        }
+
+        for(int i = 0; i < d1.size(); i++){
+            for(int j = i + 1; j < d1.size(); j++){
+                if(d1.get(i) > 0 && d1.get(j) > 0 && d1.get(i) > d1.get(j))
+                    invCount++;
+            }
+        }
+
+        return (invCount % 2 == 0);
+    }
 
     int h(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal, heuristics h){
         switch (h){
@@ -108,79 +127,83 @@ public class Puzzler {
     }
 
     void puzzleSolver(){
-        PuzzleNode currentNode = root;
-        //live que
-        PriorityQueue<PuzzleNode> liveQue = new PriorityQueue<>(new comp());
-        liveQue.add(root);
-        alreadyGenerated.add(root);
+        if(solvable(puzzleStart)) {
+            PuzzleNode currentNode = root;
+            //live que
+            PriorityQueue<PuzzleNode> liveQue = new PriorityQueue<>(new comp());
+            liveQue.add(root);
+            alreadyGenerated.add(root);
 
-        int depth = 1;
-        int tryAgainIndex = 0;
+            int depth = 1;
+            int tryAgainIndex = 0;
 
 
+            while (numberOfNodes != UNSOLVABLE_LIMIT) {
+                currentNode = liveQue.peek();
+                liveQue.poll();
 
-        while (numberOfNodes != UNSOLVABLE_LIMIT){
-            currentNode = liveQue.peek();
-            liveQue.poll();
+                if (currentNode.greedCount == 0) {
+                    System.out.println("Puzzle solved!");
+                    ArrayList<String> operations = getPath(currentNode);
+                    Collections.reverse(operations);
+                    System.out.println(operations);
+                    System.out.println(operations.size());
+                    return;
+                }
 
-            if(currentNode.greedCount == 0) {
-                System.out.println("Puzzle solved!");
-                ArrayList<String> operations = getPath(currentNode);
-                Collections.reverse(operations);
-                System.out.println(operations);
-                System.out.println(operations.size());
-                return;
+                //variation 1 UP
+                ArrayList<ArrayList<Integer>> alteredPuzzle = oneUp(listCloner(currentNode.puzzleStatus));
+
+                if (alteredPuzzle != null) {
+
+                    PuzzleNode variation1 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "UP", depth);
+
+                    currentNode.child1 = variation1;
+                    currentNode.child1.parent = currentNode;
+                    liveQue.add(currentNode.child1);
+                    numberOfNodes++;
+
+                }
+                //variation 2 DOWN
+                alteredPuzzle = oneDown(listCloner(currentNode.puzzleStatus));
+                if (alteredPuzzle != null) {
+                    PuzzleNode variation2 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "DOWN", depth);
+
+                    currentNode.child2 = variation2;
+                    currentNode.child2.parent = currentNode;
+                    liveQue.add(currentNode.child2);
+                    numberOfNodes++;
+
+                }
+                //variation 3 RIGHT
+                alteredPuzzle = oneRight(listCloner(currentNode.puzzleStatus));
+                if (alteredPuzzle != null) {
+                    PuzzleNode variation3 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "RIGHT", depth);
+
+                    currentNode.child3 = variation3;
+                    currentNode.child3.parent = currentNode;
+                    liveQue.add(currentNode.child3);
+                    numberOfNodes++;
+
+                }
+                //variation 4 LEFT
+                alteredPuzzle = oneLeft(listCloner(currentNode.puzzleStatus));
+                if (alteredPuzzle != null) {
+                    PuzzleNode variation4 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "LEFT", depth);
+
+                    currentNode.child4 = variation4;
+                    currentNode.child4.parent = currentNode;
+                    liveQue.add(currentNode.child4);
+                    numberOfNodes++;
+
+                }
+
             }
-
-            //variation 1 UP
-            ArrayList<ArrayList<Integer>> alteredPuzzle = oneUp(listCloner(currentNode.puzzleStatus));
-
-            if(alteredPuzzle != null){
-
-                PuzzleNode variation1 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "UP", depth);
-
-                currentNode.child1 = variation1;
-                currentNode.child1.parent = currentNode;
-                liveQue.add(currentNode.child1);
-                numberOfNodes++;
-
-            }
-            //variation 2 DOWN
-            alteredPuzzle = oneDown(listCloner(currentNode.puzzleStatus));
-            if(alteredPuzzle != null){
-                PuzzleNode variation2 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "DOWN", depth);
-
-                currentNode.child2 = variation2;
-                currentNode.child2.parent = currentNode;
-                liveQue.add(currentNode.child2);
-                numberOfNodes++;
-
-            }
-            //variation 3 RIGHT
-            alteredPuzzle = oneRight(listCloner(currentNode.puzzleStatus));
-            if(alteredPuzzle != null) {
-                PuzzleNode variation3 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "RIGHT", depth);
-
-                currentNode.child3 = variation3;
-                currentNode.child3.parent = currentNode;
-                liveQue.add(currentNode.child3);
-                numberOfNodes++;
-
-            }
-            //variation 4 LEFT
-            alteredPuzzle = oneLeft(listCloner(currentNode.puzzleStatus));
-            if(alteredPuzzle != null){
-                PuzzleNode variation4 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "LEFT", depth);
-
-                currentNode.child4 = variation4;
-                currentNode.child4.parent = currentNode;
-                liveQue.add(currentNode.child4);
-                numberOfNodes++;
-
-            }
-
+            System.out.println("Unsolvable, number of nodes is larger than 10M");
         }
-        System.out.println("Unsolvable, number of nodes is larger than 10M");
+        else {
+            System.out.println("Unsolvable: inversion count is odd");
+        }
     }
     //index 0 = row, index 1 = col
     ArrayList<Integer> emptyPosition(ArrayList<ArrayList<Integer>> puzzleStatus){
