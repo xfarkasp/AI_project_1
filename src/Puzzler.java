@@ -1,38 +1,34 @@
-import org.w3c.dom.Node;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
-
 import static java.lang.Math.abs;
-
+//class to solve the puzzle
 public class Puzzler {
+    //enumeration for heuristic type
     public enum heuristics {
         H1,
         H2,
         H3
     }
-    private PuzzleNode root;
-    final int UNSOLVABLE_LIMIT = 1000000;
-    private int numberOfNodes;
-    private ArrayList<ArrayList<Integer>> puzzleStart;
-    private ArrayList<ArrayList<Integer>> puzzleFinal;
-    private ArrayList<PuzzleNode> alreadyGenerated;
-    private ArrayList<PuzzleNode> alreadyTried;
-    private heuristics usedH;
+    private PuzzleNode root; //root node
+    final int UNSOLVABLE_LIMIT = 1000000; //stop solving if node count is greater than 10M
+    private int numberOfNodes;  //number of generated nodes
 
+    private ArrayList<ArrayList<Integer>> puzzleFinal; //goal state
+    private ArrayList<PuzzleNode> alreadyGenerated; // que of already generated nodes
+    private ArrayList<PuzzleNode> alreadyTried; // array of already tried
+    private heuristics usedH; // used heuristic of the class
 
+    // constructor of PuzzleNode
     public Puzzler(ArrayList<ArrayList<Integer>> puzzleStart, ArrayList<ArrayList<Integer>> puzzleFinal, heuristics h) {
         this.numberOfNodes = 0;
-        this.puzzleStart = puzzleStart;
         this.puzzleFinal = puzzleFinal;
         this.usedH = h;
         this.root = new PuzzleNode(puzzleStart, h(puzzleStart, puzzleFinal,usedH), "Root", 0);
         this.alreadyGenerated = new ArrayList<>();
         this.alreadyTried = new ArrayList<>();
     }
-
+    // pick the heuristic based on the usedH member
     int h(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal, heuristics h){
         switch (h){
             case H1:
@@ -44,7 +40,7 @@ public class Puzzler {
         }
        return -1;
     }
-
+    // calculate number of misplaced positions
     public int h1(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal){
         int nokPositions = 0;
         //compare the value on the same position from the current status to the same position at final status of the puzzle
@@ -56,15 +52,19 @@ public class Puzzler {
         }
         return nokPositions;
     }
-
+    // sums up the number of horizontal and vertical moves needed to get each position to its final position
     public int h2(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal){
         int distanceSum = 0;
+        //go through every element in the matrice
         for(int i = 0; i < puzzleStatus.size(); i++){
             for(int j = 0; j < puzzleStatus.get(i).size(); j++) {
+                //save current element and calculate the horizontal and vertical misplacement from destination state
                 int element = puzzleStatus.get(i).get(j);
                 if (element != 0){
                     for (int level = 0; level < puzzleFinal.size(); level++) {
+                        //find the level of the current element
                         if (puzzleFinal.get(level).contains(element)) {
+                            //calculate difference between current coordinates and final coordinates
                             int indexOfScnd = puzzleFinal.get(level).indexOf(element);
                             int distance = (abs(i - level) + abs(j - indexOfScnd));
                             distanceSum += distance;
@@ -76,28 +76,41 @@ public class Puzzler {
 
         return distanceSum;
     }
-
+    // h3 combines the return value from h1 and h2
     public int h3(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<ArrayList<Integer>> puzzleFinal){
         return h2(puzzleStatus, puzzleFinal) + h1(puzzleStatus, puzzleFinal);
     }
-
+    //get the path from the nodes based on traversing the parents
+    //and pushing their operationUsed string member to path array list(must be reversed at the end)
     ArrayList<String> getPath(PuzzleNode node){
         ArrayList<String> path = new ArrayList<>();
+        //parent is null when the current node is the root
         while (node.parent != null) {
             path.add(node.operationUsed);
             node = node.parent;
         }
         return path;
     }
-
+    //calculate depth of the node based on the number of parents
+    int calculateDepth(PuzzleNode node){
+        int depth = 0;
+        while (node.parent != null) {
+            node = node.parent;
+            depth++;
+        }
+        return depth;
+    }
+    //check if node is unique to prevent generation of duplicate nodes
     int isUnique(ArrayList<ArrayList<Integer>> puzzleStatus, ArrayList<PuzzleNode> uniqueList){
+        //iterate through the array list from parameter
         for(PuzzleNode node: uniqueList){
+            //if node is found, return its index
             if(node.puzzleStatus.equals(puzzleStatus))
                 return uniqueList.indexOf(node);
         }
-        return -1;
+        return -1; //if node has not been found, return -1
     }
-
+    //method for visualization (not used)
     void printPuzzleStatus(ArrayList<ArrayList<Integer>> puzzleStatus){
         //print status
         for(int i = 0; i < puzzleStatus.size(); i++){
@@ -107,8 +120,10 @@ public class Puzzler {
         }
         System.out.println();
     }
+    //creates a new list, based on the current matrices status in the node, so the original values are not altered in the node
     ArrayList<ArrayList<Integer>> listCloner(ArrayList<ArrayList<Integer>> original){
         ArrayList<ArrayList<Integer>> clone = new ArrayList<>();
+        //goes through the original mat and copies its values to the new one
         for(int i = 0; i < original.size(); i++){
             clone.add(new ArrayList<>());
             for (int j = 0; j < original.get(i).size(); j++)
@@ -116,50 +131,61 @@ public class Puzzler {
         }
         return clone;
     }
-
+    //puzzle solver method to solve puzzle
     void puzzleSolver(){
-        long start = System.nanoTime();
-        PuzzleNode currentNode = root;
-        alreadyGenerated.add(root);
-        alreadyTried.add(root);
-        int depth = 1;
-        int tryAgainIndex = 0;
-        while (numberOfNodes != UNSOLVABLE_LIMIT){
+        long start = System.nanoTime(); // start timer
+        PuzzleNode currentNode = root; //set current root to point to the root
+        int depth = 0; //initialize depth
+        // puzzle is unsolvable if node count reaches 10 M or the solving time is larger than 30 seconds
+        while (numberOfNodes != UNSOLVABLE_LIMIT && ((System.nanoTime() - start) * Math.pow(10, -9) < 30)){
+            // if the greed cost of the current node calculated form the used heuristic function is 0, the puzzle is solved
             if(currentNode.greedCount == 0) {
                 System.out.println("Puzzle solved!");
                 ArrayList<String> operations = getPath(currentNode);
                 Collections.reverse(operations);
-                System.out.println(operations);
-                System.out.println(operations.size());
+                System.out.println("Operations used: " + operations);
+                System.out.println("Number of operations used: " + operations.size());
+
                 long end = System.nanoTime();
                 double timeSeconds = (end - start) * Math.pow(10, -9);
                 System.out.println("Heuristic used: " + usedH);
                 System.out.println("Execution time: " +timeSeconds + " seconds");
                 System.out.println("Number of tested nodes: " + alreadyTried.size());
                 System.out.println("Number of generated nodes: " + numberOfNodes);
-                System.out.println("Solution depth: " + depth);
+                System.out.println("Depth: " + currentNode.depth);
+
                 return;
             }
-
-            int bigestGreed = Integer.MAX_VALUE;
+            depth++; //depth is incremented
+            int bigestGreed = Integer.MAX_VALUE; // initial value to compare costs of newly generated nodes
             PuzzleNode nextNode = null;
-            //variation 1 UP
-            ArrayList<ArrayList<Integer>> alteredPuzzle = oneUp(listCloner(currentNode.puzzleStatus));
-            if(alteredPuzzle != null){
 
+            //variation 1 UP
+            ArrayList<ArrayList<Integer>> alteredPuzzle = oneUp(listCloner(currentNode.puzzleStatus)); // clones the array from node and tries to perform operation requested
+            //if operation can not be performed, null is returned and new node is not created
+            if(alteredPuzzle != null){
+                //create new altered puzzle node
                 PuzzleNode variation1 = new PuzzleNode(alteredPuzzle, h(alteredPuzzle, this.puzzleFinal, this.usedH), "UP", depth);
+                //trie if new node has already been tried
                 if(isUnique(variation1.puzzleStatus, alreadyTried) == -1) {
+                    //set new node as children of current node
                     currentNode.child1 = variation1;
                     currentNode.child1.parent = currentNode;
+                    //add new node to que of generated nodes
                     alreadyGenerated.add(currentNode.child1);
                     numberOfNodes++;
+                    //check if new nodes greed count is lower than the actual lowes greed count
                     if(currentNode.child1.greedCount < bigestGreed){
+                        //find out if node has been already generated, return its index if yes
                         int indexOfGenerated = isUnique(variation1.puzzleStatus, alreadyGenerated);
                         if(indexOfGenerated > -1){
+                            //if this node has already been generated, set current node to it from the que and recalculate its depth
                             nextNode = alreadyGenerated.get(indexOfGenerated);
+                            nextNode.depth = calculateDepth(currentNode);
                             bigestGreed = nextNode.greedCount;
                         }
                         else{
+                            // if the node was unique
                             bigestGreed = currentNode.child1.greedCount;
                             nextNode = currentNode.child1;
                         }
@@ -179,6 +205,7 @@ public class Puzzler {
                         int indexOfGenerated = isUnique(variation2.puzzleStatus, alreadyGenerated);
                         if(indexOfGenerated > -1){
                             nextNode = alreadyGenerated.get(indexOfGenerated);
+                            nextNode.depth = calculateDepth(currentNode);
                             bigestGreed = nextNode.greedCount;
                         }
                         else{
@@ -201,6 +228,7 @@ public class Puzzler {
                         int indexOfGenerated = isUnique(variation3.puzzleStatus, alreadyGenerated);
                         if (indexOfGenerated > -1) {
                             nextNode = alreadyGenerated.get(indexOfGenerated);
+                            nextNode.depth = calculateDepth(currentNode);
                             bigestGreed = nextNode.greedCount;
                         } else {
                             bigestGreed = currentNode.child3.greedCount;
@@ -222,6 +250,7 @@ public class Puzzler {
                         int indexOfGenerated = isUnique(variation4.puzzleStatus, alreadyGenerated);
                         if (indexOfGenerated > -1) {
                             nextNode = alreadyGenerated.get(indexOfGenerated);
+                            nextNode.depth = calculateDepth(currentNode);
                             bigestGreed = nextNode.greedCount;
                         } else {
                             bigestGreed = currentNode.child4.greedCount;
@@ -233,19 +262,16 @@ public class Puzzler {
 
             try{
                 if(nextNode == null){
-                    //System.out.println(depth);
-                    Collections.sort(alreadyGenerated, greedValue);
                     currentNode = alreadyGenerated.get(0);
-                    depth = currentNode.depth;
                     alreadyGenerated.remove(currentNode);
+                    depth = currentNode.depth;
+
                     continue;
                 }
-                depth++;
-                //printPuzzleStatus(nextNode.puzzleStatus);
 
                 alreadyTried.add(currentNode);
                 alreadyGenerated.remove(currentNode);
-
+                Collections.sort(alreadyGenerated, greedValue);
                 currentNode = nextNode;
             }
             catch (Exception e){
@@ -258,11 +284,18 @@ public class Puzzler {
     }
 
     // Comparator for sorting the list by best path
-    public static Comparator<PuzzleNode> greedValue = new Comparator<PuzzleNode>() {
+    public  Comparator<PuzzleNode> greedValue = new Comparator<PuzzleNode>() {
         public int compare(PuzzleNode node1, PuzzleNode node2) {
+            int depth1 = node1.depth;
+            int depth2 = node2.depth;
 
-            int greed1 = node1.greedCount + node1.depth;
-            int greed2 = node2.greedCount + node2.depth;
+            if(node1.puzzleStatus.size() > 3 && Puzzler.this.usedH == heuristics.H1){
+                depth1 = 0;
+                depth2 = 0;
+            }
+
+            int greed1 = node1.greedCount + depth1;
+            int greed2 = node2.greedCount + depth2;
             //return descending order
             return greed1 - greed2;
         }
@@ -341,8 +374,8 @@ public class Puzzler {
 
 class PuzzleNode {
     int greedCount;
-    String operationUsed;
     int depth;
+    String operationUsed;
     PuzzleNode child1;
     PuzzleNode child2;
     PuzzleNode child3;

@@ -46,13 +46,10 @@ public class Main {
         }
         System.out.println();
 
-        Puzzler h3 = new Puzzler(graph, finalGraph, Puzzler.heuristics.H3);
         Puzzler h2 = new Puzzler(graph, finalGraph, Puzzler.heuristics.H2);
         Puzzler h1 = new Puzzler(graph, finalGraph, Puzzler.heuristics.H1);
 
         h2.puzzleSolver();
-        h3.puzzleSolver();
-
         h1.puzzleSolver();
     }
 }
