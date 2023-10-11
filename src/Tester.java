@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 import static java.util.Collections.shuffle;
-
+// Tester class used to generate random puzzle scenarios
 public class Tester {
     public static ArrayList<ArrayList<Integer>> createPuzzle(int rows, int cols){
         ArrayList<ArrayList<Integer>> puzzle = new ArrayList<>();
@@ -28,6 +28,9 @@ public class Tester {
     public static void test(int rows, int cols){
         ArrayList<ArrayList<Integer>> start = createPuzzle(rows, cols);
         ArrayList<ArrayList<Integer>> goal = createPuzzle(rows, cols);
+
+        System.out.println("Start: " + start);
+        System.out.println("Goal: " + goal);
 
         Puzzler puzzleH1 = new Puzzler(start , goal, Puzzler.heuristics.H1);
         puzzleH1.puzzleSolver();
